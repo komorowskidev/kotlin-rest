@@ -1,4 +1,4 @@
-package pl.komorowskidev.kotlinrest.rest.services
+package pl.komorowskidev.kotlinrest.util
 
 import org.springframework.stereotype.Component
 import pl.komorowskidev.kotlinrest.db.entity.Transaction
