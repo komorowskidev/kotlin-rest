@@ -1,13 +1,16 @@
-package pl.komorowskidev.kotlinrest.rest.services
+package pl.komorowskidev.kotlinrest.db.services
 
 import org.springframework.stereotype.Component
 import pl.komorowskidev.kotlinrest.db.repository.TransactionRepository
 import pl.komorowskidev.kotlinrest.rest.dto.TransactionDto
+import pl.komorowskidev.kotlinrest.util.IdsExtractor
+import pl.komorowskidev.kotlinrest.util.TransactionListConverter
 
 @Component
 class TransactionService(
     private val transactionRepository: TransactionRepository,
-    private val transactionListConverter: TransactionListConverter) {
+    private val transactionListConverter: TransactionListConverter,
+    private val idsExtractor: IdsExtractor) {
 
     fun getTransactions(accountTypeId: String, customerId: String): List<TransactionDto> {
         val result: List<TransactionDto>
@@ -16,41 +19,23 @@ class TransactionService(
                 result = transactionListConverter.toTransactionDto(
                     transactionRepository.findAllByOrderByAmountInCentsAsc())
             } else {
-                val customerIdList = getIdList(customerId)
+                val customerIdSet = idsExtractor.getIdSet(customerId)
                 result = transactionListConverter.toTransactionDto(
-                    transactionRepository.findByCustomerIdInOrderByAmountInCentsAsc(customerIdList))
+                    transactionRepository.findByCustomerIdInOrderByAmountInCentsAsc(customerIdSet))
             }
         } else {
-            val accountTypeIdList = getIdList(accountTypeId)
+            val accountTypeIdSet = idsExtractor.getIdSet(accountTypeId)
             if(customerId.toLowerCase().equals("all")){
                 result = transactionListConverter.toTransactionDto(
-                    transactionRepository.findByAccountTypeIdInOrderByAmountInCentsAsc(accountTypeIdList))
+                    transactionRepository.findByAccountTypeIdInOrderByAmountInCentsAsc(accountTypeIdSet))
             } else {
-                val customerIdList = getIdList(customerId)
+                val customerIdSet = idsExtractor.getIdSet(customerId)
                 result = transactionListConverter.toTransactionDto(
                     transactionRepository.findByCustomerIdInAndAccountTypeIdInOrderByAmountInCentsAsc(
-                        customerIdList, accountTypeIdList))
+                        customerIdSet, accountTypeIdSet))
             }
-        }
-        return result;
-    }
-
-    private fun getIdList(customerId: String): List<Long> {
-        val result = ArrayList<Long>()
-        if(customerId.contains(",")){
-            val idList = customerId.split(",")
-            idList.forEach{
-                addToList(result, it)
-            }
-        } else {
-            addToList(result, customerId)
         }
         return result
     }
 
-    private fun addToList(result: ArrayList<Long>, it: String) {
-        try {
-            result.add(it.toLong())
-        } catch(e: NumberFormatException){}
-    }
 }

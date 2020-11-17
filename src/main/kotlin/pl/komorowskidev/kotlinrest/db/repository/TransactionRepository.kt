@@ -8,11 +8,11 @@ interface TransactionRepository : MongoRepository<Transaction, String> {
     fun findAllByOrderByAmountInCentsAsc(): List<Transaction>
 
     fun findByCustomerIdInOrderByAmountInCentsAsc(
-        customerIdList: List<Long>): List<Transaction>
+        customerIdSet: Set<Long>): List<Transaction>
 
     fun findByAccountTypeIdInOrderByAmountInCentsAsc(
-        accountTypeIdList: List<Long>): List<Transaction>
+        accountTypeIdSet: Set<Long>): List<Transaction>
 
     fun findByCustomerIdInAndAccountTypeIdInOrderByAmountInCentsAsc(
-        customerIdList: List<Long>, accountTypeIdList: List<Long>): List<Transaction>
+        customerIdSet: Set<Long>, accountTypeIdSet: Set<Long>): List<Transaction>
 }
