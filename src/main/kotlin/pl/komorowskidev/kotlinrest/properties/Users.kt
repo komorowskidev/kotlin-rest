@@ -6,9 +6,8 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-class Users(var userMap: Properties) {
+class Users {
 
-    init {
-        userMap = PropertiesLoaderUtils.loadProperties(ClassPathResource("users.properties"))
-    }
+    var userMap: Properties = PropertiesLoaderUtils.loadProperties(ClassPathResource("users.properties"))
+
 }

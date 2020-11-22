@@ -10,7 +10,7 @@ import pl.komorowskidev.kotlinrest.file.CustomersLoader
 import pl.komorowskidev.kotlinrest.file.TransactionsLoader
 
 @Component
-class Init(
+class InitApplication(
     private val mongoTemplate: MongoTemplate,
     private val accountTypesLoader: AccountTypesLoader,
     private val customersLoader: CustomersLoader,
@@ -28,7 +28,7 @@ class Init(
         mongoTemplate.db.drop()
     }
 
-    fun insertDataIntoDatabase(){
+    private fun insertDataIntoDatabase(){
         accountTypesLoader.getAccountTypes().forEach { accountTypeRepository.save(it) }
         customersLoader.getCustomers().forEach { customerRepository.save(it) }
         transactionsLoader.getTransactions().forEach { transactionRepository.save(it) }

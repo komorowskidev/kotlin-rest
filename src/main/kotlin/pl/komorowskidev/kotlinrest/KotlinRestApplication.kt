@@ -12,4 +12,3 @@ open class KotlinRestApplication {
         }
     }
 }
-

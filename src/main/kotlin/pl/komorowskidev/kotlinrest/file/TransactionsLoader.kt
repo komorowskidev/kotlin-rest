@@ -2,10 +2,11 @@ package pl.komorowskidev.kotlinrest.file
 
 import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Component
-import pl.komorowskidev.kotlinrest.db.entity.Transaction
+import pl.komorowskidev.kotlinrest.db.dao.TransactionDao
 import pl.komorowskidev.kotlinrest.properties.ColumnName
 import pl.komorowskidev.kotlinrest.properties.DataFilePathName
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
@@ -19,35 +20,31 @@ class TransactionsLoader(
         private val logger = LogManager.getLogger()
     }
 
-    private val dateFormatter: DateTimeFormatter
+    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
-    init {
-        dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-    }
-
-    fun getTransactions(): List<Transaction> {
+    fun getTransactions(): List<TransactionDao> {
         return getTransactions(fileHelper.getLines(dataFilePathName.transactions))
     }
 
-    private fun getTransactions(lines: List<String>): List<Transaction> {
-        val result = ArrayList<Transaction>()
-        if(!lines.isEmpty()) {
+    private fun getTransactions(lines: List<String>): List<TransactionDao> {
+        val result = ArrayList<TransactionDao>()
+        if(lines.isNotEmpty()) {
             iterateTransactions(result, lines)
         }
         return result
     }
 
-    private fun iterateTransactions(result: ArrayList<Transaction>, lines: List<String>) {
+    private fun iterateTransactions(result: ArrayList<TransactionDao>, lines: List<String>) {
         val iterator = lines.iterator()
         val line = iterator.next()
-        if (line.equals(columnName.transactions)){
+        if (line == columnName.transactions){
             while(iterator.hasNext()) {
                 addTransaction(result, iterator.next())
             }
         }
     }
 
-    private fun addTransaction(result: ArrayList<Transaction>, line: String) {
+    private fun addTransaction(result: ArrayList<TransactionDao>, line: String) {
         val record = line.split(",")
         if(record.size == 6){
             try {
@@ -56,8 +53,8 @@ class TransactionsLoader(
                 amount = amount * 100 + record[2].replace("\"", "").toInt()
                 val accountTypeId = record[3].toLong()
                 val customerId = record[4].toLong()
-                val date = LocalDateTime.parse(record[5], dateFormatter)
-                result.add(Transaction(id, amount, accountTypeId, customerId, date))
+                val utc = LocalDateTime.parse(record[5], dateFormatter).atZone(ZoneId.systemDefault()).toInstant()
+                result.add(TransactionDao(id, amount, accountTypeId, customerId, utc))
             } catch(e: NumberFormatException) {
                 logger.error("error in numbers at {}", line)
             } catch(e: DateTimeParseException) {
