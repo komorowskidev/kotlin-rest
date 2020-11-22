@@ -1,7 +1,7 @@
 package pl.komorowskidev.kotlinrest.db.repository
 
 import org.springframework.data.mongodb.repository.MongoRepository
-import pl.komorowskidev.kotlinrest.db.entity.Customer
+import pl.komorowskidev.kotlinrest.db.dao.CustomerDao
 
-interface CustomerRepository : MongoRepository<Customer, Long> {
+interface CustomerRepository : MongoRepository<CustomerDao, Long> {
 }

@@ -2,7 +2,7 @@ package pl.komorowskidev.kotlinrest.file
 
 import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Component
-import pl.komorowskidev.kotlinrest.db.entity.Customer
+import pl.komorowskidev.kotlinrest.db.dao.CustomerDao
 import pl.komorowskidev.kotlinrest.properties.ColumnName
 import pl.komorowskidev.kotlinrest.properties.DataFilePathName
 
@@ -16,35 +16,35 @@ class CustomersLoader(
         private val logger = LogManager.getLogger()
     }
 
-    fun getCustomers(): List<Customer> {
+    fun getCustomers(): List<CustomerDao> {
         return getCustomer(fileHelper.getLines(dataFilePathName.customers))
     }
 
-    private fun getCustomer(lines: List<String>): List<Customer> {
-        val result = ArrayList<Customer>()
-        if(!lines.isEmpty()) {
+    private fun getCustomer(lines: List<String>): List<CustomerDao> {
+        val result = ArrayList<CustomerDao>()
+        if(lines.isNotEmpty()) {
             iterateCustomers(result, lines)
         }
         return result
     }
 
-    private fun iterateCustomers(result: ArrayList<Customer>, lines: List<String>) {
+    private fun iterateCustomers(result: ArrayList<CustomerDao>, lines: List<String>) {
         val iterator = lines.iterator()
         val line = iterator.next()
-        if (line.equals(columnName.customers)){
+        if (line == columnName.customers){
             while(iterator.hasNext()) {
                 addCustomer(result, iterator.next())
             }
         }
     }
 
-    private fun addCustomer(result: ArrayList<Customer>, line: String) {
+    private fun addCustomer(result: ArrayList<CustomerDao>, line: String) {
         val record = line.split(",")
         if(record.size == 5){
             try {
                 var balance = record[3].replace("\"", "").toInt()
                 balance = balance * 100 + record[4].replace("\"", "").toInt()
-                result.add(Customer(record[0].toLong(), record[1], record[2], balance))
+                result.add(CustomerDao(record[0].toLong(), record[1], record[2], balance))
             } catch(e: NumberFormatException) {
                 logger.error("id or balance error at {}", line)
             }
