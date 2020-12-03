@@ -1,36 +1,59 @@
 package pl.komorowskidev.kotlinrest
 
-import org.springframework.data.mongodb.core.MongoTemplate
+import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Component
-import pl.komorowskidev.kotlinrest.db.repository.AccountTypeRepository
-import pl.komorowskidev.kotlinrest.db.repository.CustomerRepository
-import pl.komorowskidev.kotlinrest.db.repository.TransactionRepository
-import pl.komorowskidev.kotlinrest.file.AccountTypesLoader
-import pl.komorowskidev.kotlinrest.file.CustomersLoader
-import pl.komorowskidev.kotlinrest.file.TransactionsLoader
+import pl.komorowskidev.kotlinrest.db.services.AccountTypeService
+import pl.komorowskidev.kotlinrest.db.services.CustomerService
+import pl.komorowskidev.kotlinrest.db.services.DbService
+import pl.komorowskidev.kotlinrest.db.services.TransactionService
+import pl.komorowskidev.kotlinrest.file.FileLoader
+import pl.komorowskidev.kotlinrest.properties.DataFilePathName
+import pl.komorowskidev.kotlinrest.util.converters.AccountTypeConverter
+import pl.komorowskidev.kotlinrest.util.converters.CustomerConverter
+import pl.komorowskidev.kotlinrest.util.converters.TransactionConverter
+import java.io.IOException
 
 @Component
 class InitApplication(
-    private val mongoTemplate: MongoTemplate,
-    private val accountTypesLoader: AccountTypesLoader,
-    private val customersLoader: CustomersLoader,
-    private val transactionsLoader: TransactionsLoader,
-    private val accountTypeRepository: AccountTypeRepository,
-    private val customerRepository: CustomerRepository,
-    private val transactionRepository: TransactionRepository) {
+    dbService: DbService,
+    private val dataFilePathName: DataFilePathName,
+    private val accountTypeConverter: AccountTypeConverter,
+    private val customerConverter: CustomerConverter,
+    private val transactionConverter: TransactionConverter,
+    private val fileLoader: FileLoader,
+    private val accountTypeService: AccountTypeService,
+    private val customerService: CustomerService,
+    private val transactionService: TransactionService) {
+
+    companion object {
+        private val logger = LogManager.getLogger()
+    }
 
     init {
-        clearDataBase()
-        insertDataIntoDatabase()
+        dbService.clearDataBase()
+        try {
+            loadExampleData()
+        } catch(e: IOException) {
+            logger.error("File not found. {}", e.message)
+        }
+        dbService.removeTemporaryCollection("account-type")
+        dbService.removeTemporaryCollection("customer")
     }
 
-    private fun clearDataBase() {
-        mongoTemplate.db.drop()
+    @Throws(IOException::class)
+    private fun loadExampleData(){
+        fileLoader.load(
+                dataFilePathName.accountTypes,
+                accountTypeConverter,
+                accountTypeService)
+        fileLoader.load(
+                dataFilePathName.customers,
+                customerConverter,
+                customerService)
+        fileLoader.load(
+                dataFilePathName.transactions,
+                transactionConverter,
+                transactionService)
     }
 
-    private fun insertDataIntoDatabase(){
-        accountTypesLoader.getAccountTypes().forEach { accountTypeRepository.save(it) }
-        customersLoader.getCustomers().forEach { customerRepository.save(it) }
-        transactionsLoader.getTransactions().forEach { transactionRepository.save(it) }
-    }
 }

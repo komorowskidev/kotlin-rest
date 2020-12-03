@@ -1,18 +1,18 @@
 package pl.komorowskidev.kotlinrest.db.repository
 
 import org.springframework.data.mongodb.repository.MongoRepository
-import pl.komorowskidev.kotlinrest.db.dao.TransactionDao
+import pl.komorowskidev.kotlinrest.db.entities.TransactionEntity
 
-interface TransactionRepository : MongoRepository<TransactionDao, String> {
+interface TransactionRepository: MongoRepository<TransactionEntity, Long> {
 
-    fun findAllByOrderByAmountInCentsAsc(): List<TransactionDao>
+    fun findAllByOrderByAmountInCentsAsc(): List<TransactionEntity>
 
     fun findByCustomerIdInOrderByAmountInCentsAsc(
-        customerIdSet: Set<Long>): List<TransactionDao>
+        customerIdSet: Set<Long>): List<TransactionEntity>
 
     fun findByAccountTypeIdInOrderByAmountInCentsAsc(
-        accountTypeIdSet: Set<Long>): List<TransactionDao>
+        accountTypeIdSet: Set<Long>): List<TransactionEntity>
 
     fun findByCustomerIdInAndAccountTypeIdInOrderByAmountInCentsAsc(
-        customerIdSet: Set<Long>, accountTypeIdSet: Set<Long>): List<TransactionDao>
+        customerIdSet: Set<Long>, accountTypeIdSet: Set<Long>): List<TransactionEntity>
 }

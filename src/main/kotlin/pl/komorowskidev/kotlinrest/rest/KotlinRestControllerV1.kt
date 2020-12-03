@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import pl.komorowskidev.kotlinrest.businesslogic.services.TransactionService
+import pl.komorowskidev.kotlinrest.db.services.TransactionService
 import pl.komorowskidev.kotlinrest.rest.dto.TransactionDto
 
 @RestController
@@ -17,6 +17,6 @@ class KotlinRestControllerV1(
     fun transaction(
         @RequestParam(value = "account_type", defaultValue = "all") accountTypeId: String,
         @RequestParam(value = "customer_id", defaultValue = "all") customerId: String): List<TransactionDto> {
-        return transactionService.getTransactions(accountTypeId, customerId)
+        return transactionService.getTransactionsDto(accountTypeId, customerId)
     }
 }
