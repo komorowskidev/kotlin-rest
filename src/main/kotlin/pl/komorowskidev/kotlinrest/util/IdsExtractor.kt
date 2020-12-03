@@ -1,21 +1,9 @@
 package pl.komorowskidev.kotlinrest.util
 
 import org.springframework.stereotype.Component
-import pl.komorowskidev.kotlinrest.beans.IdSets
-import pl.komorowskidev.kotlinrest.db.dao.TransactionDao
 
 @Component
 class IdsExtractor {
-
-    fun getIdSets(transactionDaoList: List<TransactionDao>): IdSets {
-        val accountTypeIdSet = HashSet<Long>()
-        val customerIdSet = HashSet<Long>()
-        transactionDaoList.forEach {
-            accountTypeIdSet.add(it.accountTypeId)
-            customerIdSet.add(it.customerId)
-        }
-        return IdSets(accountTypeIdSet, customerIdSet)
-    }
 
     fun getIdSet(ids: String): Set<Long> {
         val result = HashSet<Long>()

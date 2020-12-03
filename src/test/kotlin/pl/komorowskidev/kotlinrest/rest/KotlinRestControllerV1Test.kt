@@ -2,7 +2,7 @@ package pl.komorowskidev.kotlinrest.rest
 
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
-import pl.komorowskidev.kotlinrest.businesslogic.services.TransactionService
+import pl.komorowskidev.kotlinrest.db.services.TransactionService
 import pl.komorowskidev.kotlinrest.rest.dto.TransactionDto
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -26,7 +26,7 @@ class KotlinRestControllerV1Test {
         val customerId = "2"
         val transactionDtoList = ArrayList<TransactionDto>()
         transactionDtoList.add(TransactionDto("",3L, "", "", "", ""))
-        `when`(serviceMock.getTransactions(accountTypeId, customerId)).thenReturn(transactionDtoList)
+        `when`(serviceMock.getTransactionsDto(accountTypeId, customerId)).thenReturn(transactionDtoList)
 
         //when
         val actual = controller.transaction(accountTypeId, customerId)

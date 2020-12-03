@@ -1,92 +1,75 @@
 package pl.komorowskidev.kotlinrest
 
-import com.mongodb.client.MongoDatabase
 import org.mockito.Mockito.*
-import org.springframework.data.mongodb.core.MongoTemplate
-import pl.komorowskidev.kotlinrest.db.dao.AccountTypeDao
-import pl.komorowskidev.kotlinrest.db.dao.CustomerDao
-import pl.komorowskidev.kotlinrest.db.dao.TransactionDao
-import pl.komorowskidev.kotlinrest.db.repository.AccountTypeRepository
-import pl.komorowskidev.kotlinrest.db.repository.CustomerRepository
-import pl.komorowskidev.kotlinrest.db.repository.TransactionRepository
-import pl.komorowskidev.kotlinrest.file.AccountTypesLoader
-import pl.komorowskidev.kotlinrest.file.CustomersLoader
-import pl.komorowskidev.kotlinrest.file.TransactionsLoader
-import java.time.Instant
+import pl.komorowskidev.kotlinrest.db.services.AccountTypeService
+import pl.komorowskidev.kotlinrest.db.services.CustomerService
+import pl.komorowskidev.kotlinrest.db.services.DbService
+import pl.komorowskidev.kotlinrest.db.services.TransactionService
+import pl.komorowskidev.kotlinrest.file.FileLoader
+import pl.komorowskidev.kotlinrest.properties.DataFilePathName
+import pl.komorowskidev.kotlinrest.util.converters.AccountTypeConverter
+import pl.komorowskidev.kotlinrest.util.converters.CustomerConverter
+import pl.komorowskidev.kotlinrest.util.converters.TransactionConverter
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 class InitApplicationTest {
     private lateinit var initApplication: InitApplication
-    private lateinit var mongoTemplateMock: MongoTemplate
-    private lateinit var accountTypesLoaderMock: AccountTypesLoader
-    private lateinit var customersLoaderMock: CustomersLoader
-    private lateinit var transactionsLoaderMock: TransactionsLoader
-    private lateinit var accountTypeRepositoryMock: AccountTypeRepository
-    private lateinit var customerRepositoryMock: CustomerRepository
-    private lateinit var transactionRepositoryMock: TransactionRepository
-    private lateinit var mongoDatabaseMock: MongoDatabase
-    private lateinit var accountTypeDao1: AccountTypeDao
-    private lateinit var accountTypeDao2: AccountTypeDao
-    private lateinit var customerDao1: CustomerDao
-    private lateinit var customerDao2: CustomerDao
-    private lateinit var transactionDao1: TransactionDao
-    private lateinit var transactionDao2: TransactionDao
+    private lateinit var dbServiceMock: DbService
+    private lateinit var dataFilePathNameMock: DataFilePathName
+    private lateinit var accountTypeConverterMock: AccountTypeConverter
+    private lateinit var customerConverterMock: CustomerConverter
+    private lateinit var transactionConverterMock: TransactionConverter
+    private lateinit var fileLoaderMock: FileLoader
+    private lateinit var accountTypeServiceMock: AccountTypeService
+    private lateinit var customerServiceMock: CustomerService
+    private lateinit var transactionServiceMock: TransactionService
 
     @BeforeTest
     fun init(){
-        mongoTemplateMock = mock(MongoTemplate::class.java)
-        accountTypesLoaderMock = mock(AccountTypesLoader::class.java)
-        customersLoaderMock = mock(CustomersLoader::class.java)
-        transactionsLoaderMock = mock(TransactionsLoader::class.java)
-        accountTypeRepositoryMock = mock(AccountTypeRepository::class.java)
-        customerRepositoryMock = mock(CustomerRepository::class.java)
-        transactionRepositoryMock = mock(TransactionRepository::class.java)
-        mongoDatabaseMock = mock(MongoDatabase::class.java)
-        `when`(mongoTemplateMock.db).thenReturn(mongoDatabaseMock)
-        accountTypeDao1 = AccountTypeDao(1L, "1")
-        accountTypeDao2 = AccountTypeDao(2L, "2")
-        `when`(accountTypesLoaderMock.getAccountTypes()).thenReturn(listOf(accountTypeDao1, accountTypeDao2))
-        customerDao1 = CustomerDao(3L,"3", "4", 5)
-        customerDao2 = CustomerDao(6L,"7", "8", 9)
-        `when`(customersLoaderMock.getCustomers()).thenReturn(listOf(customerDao1, customerDao2))
-        transactionDao1 = TransactionDao(10L,1234,11L,12L, Instant.now())
-        transactionDao2 = TransactionDao(13L,12345,14L,16L, Instant.now())
-        `when`(transactionsLoaderMock.getTransactions()).thenReturn(listOf(transactionDao1, transactionDao2))
+        dbServiceMock = mock(DbService::class.java)
+        dataFilePathNameMock = mock(DataFilePathName::class.java)
+        accountTypeConverterMock = mock(AccountTypeConverter::class.java)
+        customerConverterMock = mock(CustomerConverter::class.java)
+        transactionConverterMock = mock(TransactionConverter::class.java)
+        fileLoaderMock = mock(FileLoader::class.java)
+        accountTypeServiceMock = mock(AccountTypeService::class.java)
+        customerServiceMock = mock(CustomerService::class.java)
+        transactionServiceMock = mock(TransactionService::class.java)
+        `when`(dataFilePathNameMock.accountTypes).thenReturn("acc")
+        `when`(dataFilePathNameMock.customers).thenReturn("cus")
+        `when`(dataFilePathNameMock.transactions).thenReturn("tra")
         initApplication = InitApplication(
-            mongoTemplateMock,
-            accountTypesLoaderMock,
-            customersLoaderMock,
-            transactionsLoaderMock,
-            accountTypeRepositoryMock,
-            customerRepositoryMock,
-            transactionRepositoryMock)
+            dbServiceMock,
+            dataFilePathNameMock,
+            accountTypeConverterMock,
+            customerConverterMock,
+            transactionConverterMock,
+            fileLoaderMock,
+            accountTypeServiceMock,
+            customerServiceMock,
+            transactionServiceMock)
     }
 
     @Test
     fun shouldClearDataBase(){
         //then
-        verify(mongoDatabaseMock).drop()
+        verify(dbServiceMock).clearDataBase()
     }
 
     @Test
-    fun shouldSendDataTypesToDataBase(){
+    fun shouldLoadExampleData(){
         //then
-        verify(accountTypeRepositoryMock).save(accountTypeDao1)
-        verify(accountTypeRepositoryMock).save(accountTypeDao2)
+        verify(fileLoaderMock).load(dataFilePathNameMock.accountTypes, accountTypeConverterMock, accountTypeServiceMock)
+        verify(fileLoaderMock).load(dataFilePathNameMock.customers, customerConverterMock, customerServiceMock)
+        verify(fileLoaderMock).load(dataFilePathNameMock.transactions, transactionConverterMock, transactionServiceMock)
     }
 
     @Test
-    fun shouldSendCustomersToDataBase(){
+    fun shouldRemoveTemporaryCollections(){
         //then
-        verify(customerRepositoryMock).save(customerDao1)
-        verify(customerRepositoryMock).save(customerDao2)
-    }
-
-    @Test
-    fun shouldSendTransactionsToDataBase(){
-        //then
-        verify(transactionRepositoryMock).save(transactionDao1)
-        verify(transactionRepositoryMock).save(transactionDao2)
+        verify(dbServiceMock).removeTemporaryCollection("account-type")
+        verify(dbServiceMock).removeTemporaryCollection("customer")
     }
 }
+

@@ -37,6 +37,10 @@ _you can use word "ALL" or omit this parameter to get transactions of all custom
 `/api/v1/transaction?account_type=1,4&customer_id=ALL`
 
 ---
+
+## v1.2.0
+* only one collection in database
+
 ## v1.1.1
 
 * bugfixing
