@@ -38,7 +38,7 @@ _you can use word "ALL" or omit this parameter to get transactions of all custom
 
 ---
 
-## v2.0.0
+## v1.2.0
 * only one collection in database
 
 ## v1.1.1
